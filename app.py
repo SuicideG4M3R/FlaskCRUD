@@ -2,6 +2,8 @@ from flask import Flask, render_template, redirect, request
 from flask_sqlalchemy import SQLAlchemy
 from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
 
+from form import check_user
+
 
 class Base(DeclarativeBase):
     pass
@@ -76,20 +78,13 @@ def create_user():
         username = request.form.get('username').lower().capitalize()
         email = request.form.get('email').lower()
 
-        if not username or not email:
-            context['error'] = 'Username and email are required'
-            return render_template('index.html', context=context)
+        # If receives render_template from func, returns that template, else passes
+        valid = check_user(username, email, context)
+        if valid:
+            return valid
 
-        if User.query.filter_by(username=username).first():
-            context['error'] = f'User with username {username} already exists'
-            return render_template('index.html', context=context)
-
-        if not len(username) >= 3:
-            context['error'] = 'Username must be at least 3 characters'
-            return render_template('index.html', context=context)
-
-        if '@' not in email:
-            context['error'] = 'Email must contain @'
+        if User.query.filter_by(username=username).first() or User.query.filter_by(email=email).first():
+            context['error'] = f'User already exists'
             return render_template('index.html', context=context)
 
         user = User(username=username, email=email)
@@ -113,6 +108,46 @@ def generate_users():
         db.session.commit()
         return redirect('/users')
     return 'Database already has entries'
+
+
+@app.route('/user/<int:id>/edit', methods=['GET', 'POST'])
+def edit_user(id):
+    user = User.query.filter_by(id=id).first()
+    if not user:
+        return redirect('/users')
+    context = {
+        'form': {
+            f'{user.username}': 'text',
+            f'{user.email}': 'email'
+        }
+    }
+    if request.method == 'GET':
+        return render_template('index.html', context=context)
+
+    if request.method == 'POST':
+        new_username = request.form.get(f'{user.username}').lower().capitalize()
+        new_email = request.form.get(f'{user.email}').lower()
+
+        # If receives render_template from func, returns that template, else passes
+        valid = check_user(new_username, new_email, context)
+        if valid:
+            return valid
+
+        existing_username = User.query.filter(User.username == new_username, User.id != user.id).first()
+        existing_email = User.query.filter(User.email == new_email, User.id != user.id).first()
+        if existing_username or existing_email:
+            context['error'] = f'User already exists'
+            return render_template('index.html', context=context)
+
+        try:
+            user.username = new_username
+            user.email = new_email
+            db.session.commit()
+        except Exception as e:
+            db.session.rollback()
+            context['error'] = f'Something went wrong: {e}'
+            return render_template('index.html', context=context)
+        return redirect(f'/user/{id}/edit')
 
 
 if __name__ == '__main__':
