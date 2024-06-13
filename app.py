@@ -37,6 +37,30 @@ def show_users():
     return render_template('index.html', context=context)
 
 
+@app.route('/user/<int:id>', methods=['GET'])
+def show_user(id):
+    single_user = User.query.filter_by(id=id).first()
+    if not single_user:
+        return redirect('/users')
+
+    if request.method == 'GET':
+        context = {
+            'user': single_user
+        }
+        return render_template('index.html', context=context)
+
+
+@app.route('/user/<int:id>/delete', methods=['GET'])
+def delete_user(id):
+    if request.method == 'GET':
+        user = User.query.filter_by(id=id).first()
+        if not user:
+            return redirect('/users')
+        db.session.delete(user)
+        db.session.commit()
+        return redirect('/users')
+
+
 @app.route('/create-user', methods=['GET', 'POST'])
 def create_user():
     context = {
@@ -49,20 +73,25 @@ def create_user():
         return render_template('index.html', context=context)
 
     if request.method == 'POST':
-        username = request.form.get('username')
-        email = request.form.get('email')
+        username = request.form.get('username').lower().capitalize()
+        email = request.form.get('email').lower()
+
         if not username or not email:
             context['error'] = 'Username and email are required'
             return render_template('index.html', context=context)
+
         if User.query.filter_by(username=username).first():
             context['error'] = f'User with username {username} already exists'
             return render_template('index.html', context=context)
+
         if not len(username) >= 3:
             context['error'] = 'Username must be at least 3 characters'
             return render_template('index.html', context=context)
+
         if '@' not in email:
             context['error'] = 'Email must contain @'
             return render_template('index.html', context=context)
+
         user = User(username=username, email=email)
         try:
             db.session.add(user)

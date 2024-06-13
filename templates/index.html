@@ -18,6 +18,8 @@
 {% if context %}
     {% if context.form %}
         {% include 'form.html' %}
+    {% elif context.user %}
+        {% include 'user.html' %}
     {% else %}
         {% include 'users.html' %}
     {% endif %}
