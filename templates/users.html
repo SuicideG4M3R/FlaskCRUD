@@ -1,0 +1,23 @@
+{% if context.users %}
+<table class="table">
+  <thead>
+    <tr>
+      <th scope="col">ID</th>
+      <th scope="col">Username</th>
+      <th scope="col">Email</th>
+    </tr>
+  </thead>
+    <tbody>
+  {% for user in context.users %}
+    <tr>
+      <th scope="row">{{ user.id }}</th>
+      <td>{{ user.username }}</td>
+      <td>{{ user.email }}</td>
+    </tr>
+  {% endfor %}
+  </tbody>
+</table>
+    {% else %}
+        <h2>No users found</h2>
+        <h5>Create users here : <a href="/generate-users">generate</a></h5>
+    {% endif %}
