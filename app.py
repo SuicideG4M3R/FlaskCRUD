@@ -128,6 +128,11 @@ def edit_user(id):
         new_username = request.form.get('username').lower().capitalize()
         new_email = request.form.get('email').lower()
 
+        if new_username == '':
+            new_username = user.username
+        if new_email == '':
+            new_email = user.email
+
         # If receives render_template from func, returns that template, else passes
         valid = check_user(new_username, new_email, context)
         if valid:
@@ -143,11 +148,13 @@ def edit_user(id):
             user.username = new_username
             user.email = new_email
             db.session.commit()
+            context['form']['username']['placeholder'] = new_username
+            context['form']['email']['placeholder'] = new_email
         except Exception as e:
             db.session.rollback()
             context['error'] = f'Something went wrong: {e}'
             return render_template('index.html', context=context)
-        context['error'] = f'User successfully changed'
+        context['error'] = f'User successfully updated'
         return render_template('index.html', context=context)
 
 
