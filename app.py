@@ -67,8 +67,8 @@ def delete_user(id):
 def create_user():
     context = {
         'form': {
-            'username': 'text',
-            'email': 'email'
+            'username': {'type': 'text', 'placeholder': '', 'name': 'username'},
+            'email': {'type': 'email', 'placeholder': '', 'name': 'email'}
         }
     }
     if request.method == 'GET':
@@ -117,16 +117,16 @@ def edit_user(id):
         return redirect('/users')
     context = {
         'form': {
-            f'{user.username}': 'text',
-            f'{user.email}': 'email'
+            'username': {'type': 'text', 'placeholder': f'{user.username}', 'name': 'username'},
+            'email': {'type': 'email', 'placeholder': f'{user.email}', 'name': 'email'}
         }
     }
     if request.method == 'GET':
         return render_template('index.html', context=context)
 
     if request.method == 'POST':
-        new_username = request.form.get(f'{user.username}').lower().capitalize()
-        new_email = request.form.get(f'{user.email}').lower()
+        new_username = request.form.get('username').lower().capitalize()
+        new_email = request.form.get('email').lower()
 
         # If receives render_template from func, returns that template, else passes
         valid = check_user(new_username, new_email, context)
@@ -147,7 +147,8 @@ def edit_user(id):
             db.session.rollback()
             context['error'] = f'Something went wrong: {e}'
             return render_template('index.html', context=context)
-        return redirect(f'/user/{id}/edit')
+        context['error'] = f'User successfully changed'
+        return render_template('index.html', context=context)
 
 
 if __name__ == '__main__':

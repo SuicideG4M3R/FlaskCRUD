@@ -1,11 +1,16 @@
 {% if context.form %}
     <form method="post">
-{% for key, type in context.form.items() %}
-    <label style="margin: 10px">{{ key.capitalize() }}
-        <input class="form-control" type="{{ type }}" name="{{ key }}" />
-    </label>
-{% endfor %}
-    <input class="btn btn-primary" type="submit" value="Submit" />
+        {% for name, object in context.form.items() %}
+            <label style="margin: 10px">
+                {{ name.capitalize() }}
+                <input class="form-control"
+                {% for attr, value in object.items() %}
+                    {{ attr }}="{{ value }}"
+                {% endfor %}
+                />
+            </label>
+        {% endfor %}
+        <input class="btn btn-primary" type="submit" value="Submit"/>
     </form>
     {% if context.error %}
         {{ context.error }}
