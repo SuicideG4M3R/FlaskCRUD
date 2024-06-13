@@ -12,11 +12,18 @@
             crossorigin="anonymous"></script>
     <title>FlaskCRUD</title>
 </head>
-{% include 'navbar.html' %}
 <body>
-{% if context %}{% include 'users.html' %}
+{% include 'navbar.html' %}
+<div style="margin: 50px">
+{% if context %}
+    {% if context.form %}
+        {% include 'form.html' %}
+    {% else %}
+        {% include 'users.html' %}
+    {% endif %}
 {% else %}
     <h2>Welcome :)</h2>
 {% endif %}
+</div>
 </body>
 </html>
